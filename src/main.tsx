@@ -1,22 +1,18 @@
-// 期望实现这么一段能力
-// const element = <h1 title="foo">Hello</h1>
-// const container = document.getElementById("root")
-// ReactDOM.render(element, container)
+import Didact from "./libs/react";
 
-// const element = React.createElement(
-//   "h1",
-//   { title: "foo" },
-//   "Hello"
-// )
+// const element = Didact.createElement(
+//   "div",
+//   { id: "foo" },
+//   Didact.createElement("a", null, "bar"),
+//   Didact.createElement("b")
+// );
 
-// const element = {
-//   type: "h1",
-//   props: {
-//     title: "foo",
-//     children: "Hello",
-//   },
-// }
+/** @jsx Didact.createElement */
+const element = (
+  <div id="foo">
+    <a>bar</a>
+    <b />
+  </div>
+);
 
-const ele = <h1 title="hi">你好</h1>;
-
-console.log(ele);
+console.log(Didact, element);
