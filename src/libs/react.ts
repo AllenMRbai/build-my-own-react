@@ -3,7 +3,7 @@ function createTextElement(text: string) {
     type: "TEXT_ELEMENT",
     props: {
       nodeValue: text,
-      children: [],
+      children: [] as any[],
     },
   };
 }

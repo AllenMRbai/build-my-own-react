@@ -1,4 +1,4 @@
-import Didact from "./libs/react";
+import React from "./libs/react";
 
 // const element = Didact.createElement(
 //   "div",
@@ -7,7 +7,6 @@ import Didact from "./libs/react";
 //   Didact.createElement("b")
 // );
 
-/** @jsx Didact.createElement */
 const element = (
   <div id="foo">
     <a>bar</a>
@@ -15,4 +14,4 @@ const element = (
   </div>
 );
 
-console.log(Didact, element);
+console.log(React, element);
