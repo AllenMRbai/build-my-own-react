@@ -1,13 +1,14 @@
-import React from "./libs/react";
 import ReactDOM from "./libs/react-dom";
-
-const element = (
-  <div id="foo">
-    <a>bar</a>
-    <b />
-    <h1>哈哈哈哈</h1>
-  </div>
-);
+import app from "./app";
 
 const container = document.getElementById("root");
-ReactDOM.render(element, container);
+
+console.time("benchmark ReactDOM.render ==");
+setTimeout(() => {
+  // 这个会在 ReactDOM.render 和页面渲染完毕后再执行这个console
+  // 因为 ReactDOM.render 和页面渲染都是同步的
+  console.log("你猜我再哪执行 ==");
+}, 0);
+ReactDOM.render(app, container);
+// 大约 1.1650390625 ms
+console.timeEnd("benchmark ReactDOM.render ==");

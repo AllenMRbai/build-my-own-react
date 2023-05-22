@@ -1,0 +1,187 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+button {
+  border: 1px solid #0075ff;
+  background-color: #0075ff;
+  height: 32px;
+  text-align: center;
+  width: 80px;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  list-style: none;
+}
+
+#root {
+  height: 100%;
+}
+
+.editor {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.editor-header {
+  height: 50px;
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.editor-main-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  height: calc(100% - 51px);
+}
+
+#container {
+  flex-shrink: 1;
+  flex-grow: 1;
+  background-color: rgba(0, 0, 0, 0.1);
+  overflow-y: scroll;
+}
+
+.list-container {
+  padding: 12px;
+}
+
+.operation-bar {
+  background-color: #fff;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+}
+
+.operation-bar > li {
+  width: 58px;
+  height: 58px;
+  line-height: 58px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.operation-bar .side-button {
+  width: 29px;
+  height: 58px;
+  line-height: 58px;
+  text-align: center;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.operation-bar .operation-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.editor-node-panel {
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  width: 200px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 24px;
+}
+
+.node-box {
+  position: relative;
+  height: 48px;
+  width: 127px;
+  margin-bottom: 48px;
+}
+
+.dnd-condition-node {
+  background: #f5f6f7;
+  margin-bottom: 20px;
+  width: 70px;
+  height: 70px;
+  cursor: move;
+  transform: scale(1.5, 0.7) rotate(45deg);
+  left: 24px;
+  position: absolute;
+  z-index: 1;
+}
+.condition-text {
+  height: 32px;
+  line-height: 32px;
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  cursor: move;
+  z-index: 999;
+}
+.condition-text::after {
+  content: "";
+  width: 3px;
+  height: 20px;
+  background-color: #1d59f2;
+  position: absolute;
+  display: block;
+  top: 6px;
+  left: -12px;
+}
+.dnd-action-node {
+  position: absolute;
+  box-sizing: border-box;
+  width: 123.5px;
+  height: 46px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f6f7;
+  cursor: move;
+}
+
+.dnd-action-node::after {
+  content: "";
+  width: 3px;
+  height: 30px;
+  background-color: #1d59f2;
+  position: absolute;
+  display: block;
+  top: 8px;
+  left: 8px;
+}
+.config-panel {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  width: 300px;
+  min-height: 100px;
+  border-radius: 4px;
+  position: fixed;
+  top: 90px;
+  right: 20px;
+}
+
+.config-header {
+  border-bottom: 1px solid #ccc;
+  padding: 8px 12px;
+}
