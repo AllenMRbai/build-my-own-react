@@ -1,17 +1,13 @@
 import React from "./libs/react";
-
-// const element = Didact.createElement(
-//   "div",
-//   { id: "foo" },
-//   Didact.createElement("a", null, "bar"),
-//   Didact.createElement("b")
-// );
+import ReactDOM from "./libs/react-dom";
 
 const element = (
   <div id="foo">
     <a>bar</a>
     <b />
+    <h1>哈哈哈哈</h1>
   </div>
 );
 
-console.log(React, element);
+const container = document.getElementById("root");
+ReactDOM.render(element, container);
