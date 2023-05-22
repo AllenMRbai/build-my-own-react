@@ -9,7 +9,7 @@ const render = (element: any | any[], container: HTMLElement) => {
   // 元素可能是数组，例如我们经常用的 map
   if (Array.isArray(element)) {
     element.forEach((el: any) => {
-      () => render(el, container);
+      render(el, container);
     });
     return;
   }

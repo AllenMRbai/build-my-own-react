@@ -1,6 +1,6 @@
 import React from "./libs/react";
 import "./app.css";
-import content from "./big-list";
+import bigList from "./big-list";
 
 console.time("benchmark createElement ==");
 
@@ -21,7 +21,7 @@ const app = (
         </div>
       </div>
       {/* 画布 */}
-      <div id="container">{content}</div>
+      <div id="container">{bigList}</div>
     </div>
     {/* 操作bar */}
     <ul className="operation-bar">
