@@ -17,4 +17,6 @@ export interface Fiber {
   alternate?: Fiber;
   /** 标识，commit phase阶段通过这个标识做对应的处理 */
   effectTag?: "UPDATE" | "PLACEMENT" | "DELETION";
+  /** hooks */
+  hooks?: any[];
 }

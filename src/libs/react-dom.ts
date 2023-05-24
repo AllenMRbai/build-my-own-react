@@ -4,7 +4,7 @@ import { ReactElement, JSXElementConstructor } from "./react";
 // 以下有几个概念需要理解
 // Concurrent Mode 并发模式：允许react渲染时优先让浏览器去响应高优的工作内容，例如动画、表单输入等
 // Fiber： 一种链表的数据结构，一个Fiber对应一个工作单元。Fiber内通过parent、child、sibling分别指向父节点、第一个子节点、下一个同级节点。该结构方便我们能以深度优先的方式遍历每个节点。
-// Render and Commit Phases：React执行渲染分成两个阶段，第一个Render阶段、第二个Commit Phases阶段。第一阶段负责遍历每个ReactElement并执行，第二阶段负责生成dom节点并插入html
+// Render Phase and Commit Phases：React执行渲染分成两个阶段，第一个Render Phase阶段、第二个Commit Phases阶段。第一阶段负责遍历每个ReactElement并执行，第二阶段负责生成dom节点并插入html
 // Reconciliation 调和：这里用到了diff算法，比较新旧两个Fiber，判断哪些元素需要更新到dom节点（因为dom节点的操作开销比较大，需要避免不必要的dom操作），然后执行更新
 
 /** 判断该属性是否是事件 */
@@ -28,13 +28,20 @@ function createDom(fiber: Fiber) {
     dom =
       fiber.type === "TEXT_ELEMENT"
         ? document.createTextNode("")
-        : document.createElement(fiber.type); // TODO type不是string的情况 需要处理下
+        : document.createElement(fiber.type);
   }
 
   Object.entries(fiber.props || {})
     .filter(([k]) => _isProperty(k))
     .forEach(([k, v]) => {
       (dom as any)[k] = v;
+    });
+
+  Object.keys(fiber.props)
+    .filter(_isEvent)
+    .forEach((name) => {
+      const eventType = name.toLowerCase().substring(2);
+      dom.addEventListener(eventType, fiber.props[name]);
     });
 
   return dom;
@@ -44,10 +51,14 @@ function createDom(fiber: Fiber) {
 let nextUnitOfWork = null as Fiber | null;
 // 最近提交到DOM的fiber根节点，调和（reconciliation）用。
 let currentRoot = null as Fiber | null;
-// 进行中的工作 （wip 是 work in progress 的缩写）
+// 进行中的工作,fiber根节点 （wip 是 work in progress 的缩写）
 let wipRoot = null as Fiber | null;
 // reconciliation 阶段，梳理出来需要删除的fiber
 let deletions = null as Fiber[] | null;
+// hook索引
+let hookIndex = null as number | null;
+// 进行中的工作的 fiber 节点
+let wipFiber = null as Fiber | null;
 
 /** 工作循环（浏览器闲暇时间执行） */
 function workLoop(deadline: IdleDeadline) {
@@ -69,7 +80,42 @@ function workLoop(deadline: IdleDeadline) {
 
 requestIdleCallback(workLoop);
 
+function useState<T extends any = any>(initial: T) {
+  const oldHook =
+    wipFiber.alternate &&
+    wipFiber.alternate.hooks &&
+    wipFiber.alternate.hooks[hookIndex];
+
+  const hook = {
+    state: oldHook ? oldHook.state : initial,
+    queue: [] as ((value: T) => T)[],
+  };
+
+  const actions = oldHook ? oldHook.queue : [];
+  actions.forEach((action: (value: T) => T) => {
+    hook.state = action(hook.state);
+  });
+
+  const setState = (action: (value: T) => T) => {
+    hook.queue.push(action);
+    wipRoot = {
+      dom: currentRoot.dom,
+      props: currentRoot.props,
+      alternate: currentRoot,
+    };
+    nextUnitOfWork = wipRoot;
+    deletions = [];
+  };
+
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+  return [hook.state, setState] as const;
+}
+
 function updateFunctionComponent(fiber: Fiber) {
+  wipFiber = fiber;
+  hookIndex = 0;
+  wipFiber.hooks = [];
   const children = [(fiber.type as JSXElementConstructor<any>)(fiber.props)];
   reconcileChildren(fiber, children);
 }
@@ -216,10 +262,10 @@ function reconcileChildren(wipFiber: Fiber, elements: ReactElement[]) {
       wipFiber.child = newFiber;
     } else {
       prevSibling.sibling = newFiber;
-      oldFiber = oldFiber?.sibling;
     }
 
     prevSibling = newFiber;
+    oldFiber = oldFiber?.sibling;
     index++;
   }
 }
@@ -251,3 +297,5 @@ function render(element: any | any[], container: HTMLElement) {
 export default {
   render,
 };
+
+export { useState };

@@ -1,21 +1,21 @@
 import React from "./libs/react";
+import { useState } from "./libs/react-dom";
 
-const arr = new Array(300000).fill(1).map((i) => Math.random());
+function BigList() {
+  const [count, setCount] = useState(3);
 
-console.time("big list ==");
+  const arr = new Array(count).fill(1).map((i) => Math.random());
 
-const bigList = (
-  <div className="list-container">
-    <div>
-      <input type="text" /> <button>设置数量</button>
+  const bigList = (
+    <div className="list-container">
+      <div>
+        <input type="text" /> <button>设置数量</button>
+      </div>
+      {arr.map((a) => (
+        <h4>{a}</h4>
+      ))}
     </div>
-    {arr.map((a) => (
-      <h4>{a}</h4>
-    ))}
-  </div>
-);
+  );
+}
 
-// 30万个元素 花费 102 ms
-console.timeEnd("big list ==");
-
-export default bigList;
+export default BigList;
