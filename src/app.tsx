@@ -1,6 +1,6 @@
 import React from "./libs/react";
 import "./app.css";
-import bigList from "./big-list"; // TODO
+import BigList from "./big-list"; // TODO
 
 function App() {
   return (
@@ -21,7 +21,9 @@ function App() {
           </div>
         </div>
         {/* 画布 */}
-        <div id="container"></div>
+        <div id="container">
+          <BigList></BigList>
+        </div>
       </div>
       {/* 操作bar */}
       <ul className="operation-bar">

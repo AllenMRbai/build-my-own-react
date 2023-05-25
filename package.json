@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.1",
+    "@types/react": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "@webpack-cli/generators": "^3.0.4",
@@ -25,7 +26,11 @@
     "typescript": "^5.0.4",
     "webpack": "^5.83.1",
     "webpack-cli": "^5.1.1",
-    "webpack-dev-server": "^4.15.0"
+    "webpack-dev-server": "^4.15.0",
+    "@types/lodash": "^4.14.194"
   },
-  "description": "My webpack project"
+  "description": "My webpack project",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
 }

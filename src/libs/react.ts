@@ -15,6 +15,23 @@ export interface ReactElement<
   key: Key | null;
 }
 
+export type ReactChildren = (ReactElement | boolean | null | ReactChildren)[];
+
+function _flatDeep(arr: any[]) {
+  let result = [] as any[];
+
+  arr.forEach((i) => {
+    if (Array.isArray(i)) {
+      const r = _flatDeep(i);
+      result = [...result, ...r];
+    } else {
+      result.push(i);
+    }
+  });
+
+  return result;
+}
+
 function createTextElement(text: string): ReactElement<any, any> {
   return {
     type: "TEXT_ELEMENT",
@@ -29,18 +46,29 @@ function createTextElement(text: string): ReactElement<any, any> {
 function createElement(
   type: string | JSXElementConstructor<any>,
   props: any = {},
-  ...children: ReactElement[]
+  ...children: (ReactElement | boolean | null)[]
 ): ReactElement {
-  return {
+  const result = {
     type,
     props: {
       ...props,
-      children: children.map((child) =>
-        typeof child === "object" ? child : createTextElement(child)
-      ),
+      children: _flatDeep(children) // 支持渲染array
+        // 以下值不渲染
+        .filter(
+          (child) =>
+            child !== false &&
+            child !== true &&
+            child !== undefined &&
+            child !== null
+        )
+        .map((child) =>
+          typeof child === "object" ? child : createTextElement(child)
+        ),
     },
     key: null,
-  };
+  } as ReactElement;
+
+  return result;
 }
 
 export default {

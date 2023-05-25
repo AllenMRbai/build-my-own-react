@@ -16,6 +16,12 @@ button {
   cursor: pointer;
 }
 
+input {
+  height: 32px;
+  min-width: 200px;
+  padding: 0 6px;
+}
+
 ul {
   padding: 0;
   margin: 0;

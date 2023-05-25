@@ -1,5 +1,6 @@
 import { Fiber } from "./fiber";
 import { ReactElement, JSXElementConstructor } from "./react";
+import * as _ from "lodash";
 
 // 以下有几个概念需要理解
 // Concurrent Mode 并发模式：允许react渲染时优先让浏览器去响应高优的工作内容，例如动画、表单输入等
@@ -97,7 +98,7 @@ function workLoop(deadline: IdleDeadline) {
 
 requestIdleCallback(workLoop);
 
-function useState<T extends any = any>(initial: T) {
+function useState<T = any>(initial: T) {
   const oldHook =
     wipFiber.alternate &&
     wipFiber.alternate.hooks &&
@@ -202,11 +203,31 @@ function updateDom(
     });
 }
 
-function commitDeletion(fiber: Fiber, domParent: HTMLElement | Text) {
+function doDeletion(fiber: Fiber, domParent: HTMLElement | Text) {
   if (fiber.dom) {
     domParent.removeChild(fiber.dom);
   } else {
-    commitDeletion(fiber.child, domParent);
+    doDeletion(fiber.child, domParent);
+  }
+}
+
+function findDomParent(fiber: Fiber) {
+  // 沿fiber tree向上找，只到找到有dom属性的fiber
+  // 为啥需要这样做，因为函数组件没有dom
+  let domParentFiber = fiber.parent;
+  while (!domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent;
+  }
+  const domParent = domParentFiber.dom;
+
+  return domParent;
+}
+
+/** 提交删除的节点 */
+function commitDeletion(fiber: Fiber) {
+  const domParent = findDomParent(fiber);
+  if (fiber.effectTag === "DELETION") {
+    doDeletion(fiber, domParent);
   }
 }
 
@@ -216,23 +237,16 @@ function commitWork(fiber?: Fiber) {
     return;
   }
 
-  // 沿fiber tree向上找，只到找到有dom属性的fiber
-  // 为啥需要这样做，因为函数组件没有dom
-  let domParentFiber = fiber.parent;
-  while (!domParentFiber.dom) {
-    domParentFiber = domParentFiber.parent;
-  }
-  const domParent = domParentFiber.dom;
+  const domParent = findDomParent(fiber);
 
   if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
     domParent.appendChild(fiber.dom);
-  } else if (fiber.effectTag === "DELETION") {
-    commitDeletion(fiber, domParent);
   } else if (fiber.effectTag === "UPDATE" && fiber.dom != null) {
     updateDom(fiber.dom, fiber.alternate.props, fiber.props);
   }
-  commitWork(fiber.child);
-  commitWork(fiber.sibling);
+
+  if (fiber.child) commitWork(fiber.child);
+  if (fiber.sibling) commitWork(fiber.sibling);
 }
 
 /** 调和children */
@@ -244,7 +258,6 @@ function reconcileChildren(wipFiber: Fiber, elements: ReactElement[]) {
   while (index < elements.length || oldFiber != null) {
     const element = elements[index];
     let newFiber = null;
-
     const sameType = oldFiber && element && element.type == oldFiber.type;
 
     if (sameType) {
@@ -278,7 +291,9 @@ function reconcileChildren(wipFiber: Fiber, elements: ReactElement[]) {
     if (index === 0) {
       wipFiber.child = newFiber;
     } else {
-      prevSibling.sibling = newFiber;
+      if (prevSibling) {
+        prevSibling.sibling = newFiber;
+      }
     }
 
     prevSibling = newFiber;
@@ -291,7 +306,9 @@ function reconcileChildren(wipFiber: Fiber, elements: ReactElement[]) {
  * commit the whole fiber tree to the DOM
  */
 function commitRoot() {
-  deletions.forEach(commitWork);
+  deletions.forEach((f) => {
+    commitDeletion(f);
+  });
   commitWork(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
