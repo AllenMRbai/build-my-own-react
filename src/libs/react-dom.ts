@@ -9,8 +9,11 @@ import { ReactElement, JSXElementConstructor } from "./react";
 
 /** 判断该属性是否是事件 */
 const _isEvent = (key: string) => key.startsWith("on");
+/** 是否style */
+const _isStyle = (key: string) => key === "style";
 /** 判断是否属性 */
-const _isProperty = (key: string) => key !== "children" && !_isEvent(key);
+const _isProperty = (key: string) =>
+  key !== "children" && !_isEvent(key) && !_isStyle(key);
 /** 是否新属性 */
 const _isNew = (prev: Record<string, any>, next: Record<string, any>) => (
   key: string
@@ -31,18 +34,30 @@ function createDom(fiber: Fiber) {
         : document.createElement(fiber.type);
   }
 
+  // 处理一般属性
   Object.entries(fiber.props || {})
     .filter(([k]) => _isProperty(k))
     .forEach(([k, v]) => {
       (dom as any)[k] = v;
     });
 
+  // 处理事件
   Object.keys(fiber.props)
     .filter(_isEvent)
     .forEach((name) => {
       const eventType = name.toLowerCase().substring(2);
       dom.addEventListener(eventType, fiber.props[name]);
     });
+
+  // 处理style
+  if (typeof fiber.props.style === "object") {
+    Object.entries(fiber.props.style).forEach(([key, value]) => {
+      // 如果是纯数字的话就转成 数字+px ，不确定react是不是这样实现的 TODO
+      if (typeof value === "number") value = value + "px";
+
+      (dom as any).style[key] = value;
+    });
+  }
 
   return dom;
 }
@@ -65,12 +80,14 @@ function workLoop(deadline: IdleDeadline) {
   let shouldYield = false;
 
   // 存在下一个工作单元，且浏览器任有空闲时间剩余,就继续执行下一个工作单元
+  // 这里对应 render phase
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     shouldYield = deadline.timeRemaining() < 1;
   }
 
   // 如果没有下一个需要执行的工作单元，且存在进行中的工作，那么就提交根节点进入commit phase 阶段
+  // 这里对应 commit phase
   if (!nextUnitOfWork && wipRoot) {
     commitRoot();
   }

@@ -6,6 +6,7 @@ function App() {
   return (
     <div className="editor">
       <div className="editor-header">
+        <button style={{ marginRight: 10 }}>调试</button>
         <button>保存</button>
       </div>
       <div className="editor-main-box">
