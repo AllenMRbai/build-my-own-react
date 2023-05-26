@@ -8,7 +8,7 @@ https://pomb.us/build-your-own-react/
 
 - [done] use an object for the style prop
 - [done] flatten children arrays
-- useEffect hook
+- [done] useEffect hook
 - reconciliation by key
 
 ## diving TODO
