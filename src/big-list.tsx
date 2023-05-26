@@ -1,5 +1,16 @@
 import React from "./libs/react";
-import { useState } from "./libs/react-dom";
+import { useState, useEffect } from "./libs/react-dom";
+
+function ListItem(props: any) {
+  useEffect(() => {
+    console.log("初始化数字", props.value);
+    return () => {
+      console.log("卸载数字", props.value);
+    };
+  }, [props.value]);
+
+  return <h4>{props.value}</h4>;
+}
 
 function BigList() {
   const [count, setCount] = useState(4);
@@ -15,7 +26,7 @@ function BigList() {
     <div className="list-container">
       <input placeholder="请输入条数" onInput={onChange} type="text" />
       {arr.map((a) => (
-        <h4>{a}</h4>
+        <ListItem value={a} />
       ))}
     </div>
   );

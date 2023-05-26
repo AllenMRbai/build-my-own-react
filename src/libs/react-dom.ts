@@ -130,6 +130,44 @@ function useState<T = any>(initial: T) {
   return [hook.state, setState] as const;
 }
 
+type Destructor = () => void;
+
+type DependencyList = ReadonlyArray<any>;
+
+type EffectCallback = () => void | Destructor;
+
+function useEffect(effect: EffectCallback, deps?: DependencyList): void {
+  const oldHook =
+    wipFiber.alternate &&
+    wipFiber.alternate.hooks &&
+    wipFiber.alternate.hooks[hookIndex];
+
+  const hook = {
+    deps: deps,
+    effect: effect,
+    destructor: null as void | Destructor,
+  };
+
+  if (!oldHook) {
+    // 如果是第一次调用，那么直接执行回调
+    hook.destructor = effect();
+  } else if (deps && deps.length > 0) {
+    // 如果依赖项不同，那么执行回调
+    const oldDeps = oldHook.deps;
+    const oldDestructor = oldHook.destructor;
+    const isDifferent = deps.some((val, ind) => val !== oldDeps[ind]);
+
+    if (isDifferent) {
+      // 先执行destructor
+      oldDestructor?.();
+      hook.destructor = effect();
+    }
+  }
+
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+}
+
 function updateFunctionComponent(fiber: Fiber) {
   wipFiber = fiber;
   hookIndex = 0;
@@ -228,6 +266,10 @@ function commitDeletion(fiber: Fiber) {
   const domParent = findDomParent(fiber);
   if (fiber.effectTag === "DELETION") {
     doDeletion(fiber, domParent);
+    // 执行useEffect返回的destructor
+    (fiber.hooks || []).forEach((hook) => {
+      hook.destructor?.();
+    });
   }
 }
 
@@ -332,4 +374,4 @@ export default {
   render,
 };
 
-export { useState };
+export { useState, useEffect };
