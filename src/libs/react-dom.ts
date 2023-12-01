@@ -71,10 +71,15 @@ let currentRoot = null as Fiber | null;
 let wipRoot = null as Fiber | null;
 // reconciliation 阶段，梳理出来需要删除的fiber
 let deletions = null as Fiber[] | null;
-// hook索引
+// hook索引，执行中的 hook 会读取
 let hookIndex = null as number | null;
-// 进行中的工作的 fiber 节点
+// 进行中的工作的 fiber 节点，执行中的 hook 会读取
 let wipFiber = null as Fiber | null;
+
+// 测试用
+(window as any).getCur = () => {
+  return currentRoot;
+};
 
 /** 工作循环（浏览器闲暇时间执行） */
 function workLoop(deadline: IdleDeadline) {
@@ -247,6 +252,10 @@ function doDeletion(fiber: Fiber, domParent: HTMLElement | Text) {
   } else {
     doDeletion(fiber.child, domParent);
   }
+  // 执行useEffect返回的destructor
+  (fiber.hooks || []).forEach((hook) => {
+    hook.destructor?.();
+  });
 }
 
 function findDomParent(fiber: Fiber) {
@@ -266,10 +275,6 @@ function commitDeletion(fiber: Fiber) {
   const domParent = findDomParent(fiber);
   if (fiber.effectTag === "DELETION") {
     doDeletion(fiber, domParent);
-    // 执行useEffect返回的destructor
-    (fiber.hooks || []).forEach((hook) => {
-      hook.destructor?.();
-    });
   }
 }
 
