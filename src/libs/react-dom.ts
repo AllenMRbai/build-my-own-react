@@ -16,13 +16,13 @@ const _isStyle = (key: string) => key === "style";
 const _isProperty = (key: string) =>
   key !== "children" && !_isEvent(key) && !_isStyle(key);
 /** 是否新属性 */
-const _isNew = (prev: Record<string, any>, next: Record<string, any>) => (
-  key: string
-) => prev[key] !== next[key];
+const _isNew =
+  (prev: Record<string, any>, next: Record<string, any>) => (key: string) =>
+    prev[key] !== next[key];
 /** 属性是否已删除 */
-const _isGone = (prev: Record<string, any>, next: Record<string, any>) => (
-  key: string
-) => !(key in next);
+const _isGone =
+  (prev: Record<string, any>, next: Record<string, any>) => (key: string) =>
+    !(key in next);
 
 /** 依据fiber节点 创建dom节点 */
 function createDom(fiber: Fiber) {
