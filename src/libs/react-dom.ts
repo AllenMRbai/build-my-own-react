@@ -103,23 +103,23 @@ function workLoop(deadline: IdleDeadline) {
 
 requestIdleCallback(workLoop);
 
-function useState<T = any>(initial: T) {
+function useState<T>(initial: T) {
   const oldHook =
     wipFiber.alternate &&
     wipFiber.alternate.hooks &&
     wipFiber.alternate.hooks[hookIndex];
 
   const hook = {
-    state: oldHook ? oldHook.state : initial,
-    queue: [] as ((value: T) => T)[],
+    state: (oldHook ? oldHook.state : initial) as T,
+    queue: [] as (((value: T) => T) | T)[],
   };
 
   const actions = oldHook ? oldHook.queue : [];
-  actions.forEach((action: (value: T) => T) => {
-    hook.state = action(hook.state);
+  actions.forEach((action: any) => {
+    hook.state = typeof action === "function" ? action(hook.state) : action;
   });
 
-  const setState = (action: (value: T) => T) => {
+  const setState = (action: ((value: T) => T) | T) => {
     hook.queue.push(action);
     wipRoot = {
       dom: currentRoot.dom,
@@ -155,6 +155,7 @@ function useEffect(effect: EffectCallback, deps?: DependencyList): void {
 
   if (!oldHook) {
     // 如果是第一次调用，那么直接执行回调
+    // TODO 感觉这里执行的时机不太对，应该在页面渲染完毕后再执行才对
     hook.destructor = effect();
   } else if (deps && deps.length > 0) {
     // 如果依赖项不同，那么执行回调
@@ -173,10 +174,42 @@ function useEffect(effect: EffectCallback, deps?: DependencyList): void {
   hookIndex++;
 }
 
+function useMemo<T>(memoFn: () => T, deps?: DependencyList): T {
+  const oldHook =
+    wipFiber.alternate &&
+    wipFiber.alternate.hooks &&
+    wipFiber.alternate.hooks[hookIndex];
+
+  const hook = {
+    deps: deps,
+    value: oldHook?.value || undefined,
+    memoFn,
+  };
+
+  if (!oldHook) {
+    // 如果是第一次调用，那么直接执行回调
+    hook.value = memoFn();
+  } else if (deps && deps.length > 0) {
+    // 如果依赖项不同，那么执行回调
+    const oldDeps = oldHook.deps;
+    const isDifferent = deps.some((val, ind) => val !== oldDeps[ind]);
+
+    if (isDifferent) {
+      hook.value = memoFn();
+    }
+  }
+
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+
+  return hook.value;
+}
+
 function updateFunctionComponent(fiber: Fiber) {
   wipFiber = fiber;
   hookIndex = 0;
   wipFiber.hooks = [];
+  // 需要将key和ref剔除掉再将props传到组件函数内，目前先简单这么实现下
   const children = [(fiber.type as JSXElementConstructor<any>)(fiber.props)];
   reconcileChildren(fiber, children);
 }
@@ -379,4 +412,4 @@ export default {
   render,
 };
 
-export { useState, useEffect };
+export { useState, useEffect, useMemo };

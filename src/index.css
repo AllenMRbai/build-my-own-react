@@ -191,3 +191,19 @@ li {
   border-bottom: 1px solid #ccc;
   padding: 8px 12px;
 }
+
+.flex-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.operation-button {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.7);
+  margin: 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.7);
+  padding: 2px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+}

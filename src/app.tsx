@@ -1,5 +1,4 @@
 import React from "./libs/react";
-import "./app.css";
 import BigList from "./big-list"; // TODO
 
 function App() {
